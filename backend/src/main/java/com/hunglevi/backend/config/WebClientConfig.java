@@ -14,17 +14,14 @@ import reactor.netty.http.client.HttpClient;
 
 @Configuration
 public class WebClientConfig {
-    @Value("${ml.service.url}")
-    private String mlServiceUrl;
-
     @Bean
-    public WebClient mlWebClient() {
+    public WebClient mlWebClient(@Value("${ml.service.url}") String url) {
         HttpClient httpClient = HttpClient.create()
             .option(ChannelOption.CONNECT_TIMEOUT_MILLIS, 3000)
             .responseTimeout(Duration.ofSeconds(5));
 
         return WebClient.builder()
-            .baseUrl(mlServiceUrl)
+            .baseUrl(url)
             .clientConnector(new ReactorClientHttpConnector(httpClient))
             .defaultHeader(CONTENT_TYPE, APPLICATION_JSON_VALUE)
             .build();
