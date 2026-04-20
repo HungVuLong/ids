@@ -8,147 +8,45 @@ import random
 import argparse
 import requests
 
-SPRING_URL = os.getenv("SPRING_URL", "http://localhost:8080/api/packets")
+SPRING_URL = os.getenv("SPRING_URL", "http://localhost:1010/api/packets")
 
 
 def normal_packet():
-    """Return realistic NSL-KDD normal traffic dict, protocol_type tcp, service http, flag SF"""
+    """Return realistic normal traffic packet with required backend fields"""
     return {
-        "duration": 0,
-        "protocol_type": "tcp",
-        "service": "http",
-        "flag": "SF",
-        "src_bytes": 215,
-        "dst_bytes": 45076,
-        "land": 0,
-        "wrong_fragment": 0,
-        "urgent": 0,
-        "hot": 0,
-        "num_failed_logins": 0,
-        "logged_in": 1,
-        "num_compromised": 0,
-        "root_shell": 0,
-        "su_attempted": 0,
-        "num_root": 0,
-        "num_file_creations": 0,
-        "num_shells": 0,
-        "num_access_files": 0,
-        "num_outbound_cmds": 0,
-        "is_host_login": 0,
-        "is_guest_login": 0,
-        "count": 1,
-        "srv_count": 1,
-        "serror_rate": 0.0,
-        "srv_serror_rate": 0.0,
-        "rerror_rate": 0.0,
-        "srv_rerror_rate": 0.0,
-        "same_srv_rate": 1.0,
-        "diff_srv_rate": 0.0,
-        "srv_diff_host_rate": 0.0,
-        "dst_host_count": 10,
-        "dst_host_srv_count": 10,
-        "dst_host_same_srv_rate": 1.0,
-        "dst_host_diff_srv_rate": 0.0,
-        "dst_host_same_src_port_rate": 0.0,
-        "dst_host_srv_diff_host_rate": 0.0,
-        "dst_host_serror_rate": 0.0,
-        "dst_host_srv_serror_rate": 0.0,
-        "dst_host_rerror_rate": 0.0,
-        "dst_host_srv_rerror_rate": 0.0,
+        "sourceIp": f"192.168.1.{random.randint(1, 254)}",
+        "destIp": f"10.0.0.{random.randint(1, 254)}",
+        "protocol": "TCP",
+        "size": random.randint(40, 1500),
+        "label": "normal",
+        "attackType": "normal",
+        "confidence": round(random.uniform(0.85, 1.0), 4)
     }
 
 
 def dos_packet():
-    """Return DoS-pattern packet, flag S0, zero bytes, high connection count"""
+    """Return DoS-pattern packet with required backend fields"""
     return {
-        "duration": 0,
-        "protocol_type": "tcp",
-        "service": "http",
-        "flag": "S0",
-        "src_bytes": 0,
-        "dst_bytes": 0,
-        "land": 0,
-        "wrong_fragment": 0,
-        "urgent": 0,
-        "hot": 0,
-        "num_failed_logins": 0,
-        "logged_in": 0,
-        "num_compromised": 0,
-        "root_shell": 0,
-        "su_attempted": 0,
-        "num_root": 0,
-        "num_file_creations": 0,
-        "num_shells": 0,
-        "num_access_files": 0,
-        "num_outbound_cmds": 0,
-        "is_host_login": 0,
-        "is_guest_login": 0,
-        "count": random.randint(100, 500),  # High connection count = DoS indicator
-        "srv_count": random.randint(100, 500),
-        "serror_rate": 0.8,  # High error rate
-        "srv_serror_rate": 0.8,
-        "rerror_rate": 0.0,
-        "srv_rerror_rate": 0.0,
-        "same_srv_rate": 1.0,
-        "diff_srv_rate": 0.0,
-        "srv_diff_host_rate": 0.0,
-        "dst_host_count": random.randint(200, 500),
-        "dst_host_srv_count": random.randint(200, 500),
-        "dst_host_same_srv_rate": 0.9,
-        "dst_host_diff_srv_rate": 0.0,
-        "dst_host_same_src_port_rate": 0.1,
-        "dst_host_srv_diff_host_rate": 0.0,
-        "dst_host_serror_rate": 0.8,
-        "dst_host_srv_serror_rate": 0.8,
-        "dst_host_rerror_rate": 0.0,
-        "dst_host_srv_rerror_rate": 0.0,
+        "sourceIp": f"192.168.1.{random.randint(1, 254)}",
+        "destIp": f"10.0.0.{random.randint(1, 254)}",
+        "protocol": "TCP",
+        "size": random.randint(1, 100),
+        "label": "attack",
+        "attackType": "DoS",
+        "confidence": round(random.uniform(0.75, 0.99), 4)
     }
 
 
 def probe_packet():
-    """Return Probe-pattern packet, protocol icmp, service eco_i, many dst hosts"""
+    """Return Probe-pattern packet with required backend fields"""
     return {
-        "duration": 0,
-        "protocol_type": "icmp",
-        "service": "eco_i",
-        "flag": "SF",
-        "src_bytes": 0,
-        "dst_bytes": 0,
-        "land": 0,
-        "wrong_fragment": 0,
-        "urgent": 0,
-        "hot": 0,
-        "num_failed_logins": 0,
-        "logged_in": 0,
-        "num_compromised": 0,
-        "root_shell": 0,
-        "su_attempted": 0,
-        "num_root": 0,
-        "num_file_creations": 0,
-        "num_shells": 0,
-        "num_access_files": 0,
-        "num_outbound_cmds": 0,
-        "is_host_login": 0,
-        "is_guest_login": 0,
-        "count": random.randint(20, 100),  # Moderate connection count
-        "srv_count": random.randint(5, 30),
-        "serror_rate": 0.1,
-        "srv_serror_rate": 0.1,
-        "rerror_rate": 0.0,
-        "srv_rerror_rate": 0.0,
-        "same_srv_rate": 0.3,
-        "diff_srv_rate": 0.7,  # High diff_srv_rate = scanning behavior
-        "srv_diff_host_rate": 0.8,  # Many different hosts = probing
-        "dst_host_count": random.randint(50, 200),  # Many dest hosts
-        "dst_host_srv_count": random.randint(10, 50),
-        "dst_host_same_srv_rate": 0.2,
-        "dst_host_diff_srv_rate": 0.8,
-        "dst_host_same_src_port_rate": 0.5,
-        "dst_host_srv_diff_host_rate": 0.8,
-        "dst_host_serror_rate": 0.1,
-        "dst_host_srv_serror_rate": 0.1,
-        "dst_host_rerror_rate": 0.0,
-        "dst_host_srv_rerror_rate": 0.0,
+        "sourceIp": f"192.168.1.{random.randint(1, 254)}",
+        "destIp": f"10.0.0.{random.randint(1, 254)}",
+        "protocol": "ICMP",
+        "size": random.randint(40, 200),
+        "label": "attack",
+        "attackType": "Probe",
+        "confidence": round(random.uniform(0.70, 0.95), 4)
     }
 
 
