@@ -31,10 +31,20 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<ErrorResponse> handleValidation(
             MethodArgumentNotValidException ex, HttpServletRequest req) {
-        String msg = ex.getBindingResult()
+        String fieldMsg = ex.getBindingResult()
             .getFieldErrors()
             .stream()
             .map(e -> e.getField() + ": " + e.getDefaultMessage())
+            .collect(Collectors.joining(", "));
+
+        String globalMsg = ex.getBindingResult()
+            .getGlobalErrors()
+            .stream()
+            .map(e -> e.getDefaultMessage())
+            .collect(Collectors.joining(", "));
+
+        String msg = java.util.stream.Stream.of(fieldMsg, globalMsg)
+            .filter(s -> !s.isBlank())
             .collect(Collectors.joining(", "));
         return ResponseEntity.status(400).body(
             ErrorResponse.builder()
