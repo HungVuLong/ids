@@ -1,0 +1,364 @@
+{
+  "title": "Alert API - Example Requests and Responses",
+  "baseUrl": "http://localhost:8080/api/alerts",
+  "examples": {
+    "1_get_all_alerts": {
+      "method": "GET",
+      "endpoint": "/api/alerts?page=0&size=10&status=OPEN",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "Accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "content": [
+            {
+              "id": 1,
+              "packetId": 5,
+              "alertType": "SQL_INJECTION",
+              "severity": "CRITICAL",
+              "message": "Alert created for packet: 5",
+              "status": "OPEN",
+              "createdAt": "2026-03-16T10:31:23.489+07:00",
+              "resolvedAt": null,
+              "resolvedBy": null,
+              "updatedAt": "2026-03-16T10:31:23.489+07:00"
+            },
+            {
+              "id": 2,
+              "packetId": 8,
+              "alertType": "XSS",
+              "severity": "HIGH",
+              "message": "Alert created for packet: 8",
+              "status": "OPEN",
+              "createdAt": "2026-03-16T10:32:00.000+07:00",
+              "resolvedAt": null,
+              "resolvedBy": null,
+              "updatedAt": "2026-03-16T10:32:00.000+07:00"
+            },
+            {
+              "id": 3,
+              "packetId": 12,
+              "alertType": "DDoS",
+              "severity": "CRITICAL",
+              "message": "Alert created for packet: 12",
+              "status": "OPEN",
+              "createdAt": "2026-03-16T10:33:15.000+07:00",
+              "resolvedAt": null,
+              "resolvedBy": null,
+              "updatedAt": "2026-03-16T10:33:15.000+07:00"
+            }
+          ],
+          "totalElements": 42,
+          "totalPages": 5,
+          "currentPage": 0,
+          "pageSize": 10
+        }
+      }
+    },
+    "2_get_alert_by_id": {
+      "method": "GET",
+      "endpoint": "/api/alerts/1",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "Accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "id": 1,
+          "packetId": 5,
+          "alertType": "SQL_INJECTION",
+          "severity": "CRITICAL",
+          "message": "Alert created for packet: 5",
+          "status": "OPEN",
+          "createdAt": "2026-03-16T10:31:23.489+07:00",
+          "resolvedAt": null,
+          "resolvedBy": null,
+          "updatedAt": "2026-03-16T10:31:23.489+07:00"
+        }
+      }
+    },
+    "3_update_alert_status_resolved": {
+      "method": "PATCH",
+      "endpoint": "/api/alerts/1/status",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "Content-Type": "application/json"
+      },
+      "requestBody": {
+        "status": "RESOLVED",
+        "notes": "Confirmed SQL injection attack - attacker IP blocked"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "id": 1,
+          "packetId": 5,
+          "alertType": "SQL_INJECTION",
+          "severity": "CRITICAL",
+          "message": "Confirmed SQL injection attack - attacker IP blocked",
+          "status": "RESOLVED",
+          "createdAt": "2026-03-16T10:31:23.489+07:00",
+          "resolvedAt": "2026-03-16T10:35:45.123+07:00",
+          "resolvedBy": "admin_user",
+          "updatedAt": "2026-03-16T10:35:45.123+07:00"
+        }
+      }
+    },
+    "4_update_alert_status_ignored": {
+      "method": "PATCH",
+      "endpoint": "/api/alerts/2/status",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "Content-Type": "application/json"
+      },
+      "requestBody": {
+        "status": "IGNORED",
+        "notes": "False positive - legitimate user input pattern"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "id": 2,
+          "packetId": 8,
+          "alertType": "XSS",
+          "severity": "HIGH",
+          "message": "False positive - legitimate user input pattern",
+          "status": "IGNORED",
+          "createdAt": "2026-03-16T10:32:00.000+07:00",
+          "resolvedAt": "2026-03-16T10:36:00.000+07:00",
+          "resolvedBy": "security_analyst",
+          "updatedAt": "2026-03-16T10:36:00.000+07:00"
+        }
+      }
+    },
+    "5_delete_alert": {
+      "method": "DELETE",
+      "endpoint": "/api/alerts/3",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+      },
+      "response": {
+        "status": 204,
+        "body": ""
+      }
+    },
+    "6_get_alert_statistics": {
+      "method": "GET",
+      "endpoint": "/api/alerts/stats/overview",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "Accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "openCount": 15,
+          "resolvedCount": 22,
+          "ignoredCount": 5,
+          "totalCount": 42,
+          "alertsByType": [
+            ["SQL_INJECTION", 8],
+            ["XSS", 12],
+            ["DDoS", 15],
+            ["BRUTE_FORCE", 7]
+          ]
+        }
+      }
+    },
+    "7_count_by_status": {
+      "method": "GET",
+      "endpoint": "/api/alerts/count/OPEN",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "Accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "status": "OPEN",
+          "count": 15
+        }
+      }
+    },
+    "8_get_timeline_7days": {
+      "method": "GET",
+      "endpoint": "/api/alerts/timeline?days=7",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "Accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "period": "7 days",
+          "data": [
+            ["2026-03-09", 5],
+            ["2026-03-10", 8],
+            ["2026-03-11", 3],
+            ["2026-03-12", 12],
+            ["2026-03-13", 7],
+            ["2026-03-14", 6],
+            ["2026-03-15", 0],
+            ["2026-03-16", 0]
+          ]
+        }
+      }
+    },
+    "9_get_timeline_30days": {
+      "method": "GET",
+      "endpoint": "/api/alerts/timeline?days=30",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "Accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "period": "30 days",
+          "data": [
+            ["2026-02-14", 2],
+            ["2026-02-15", 4],
+            ["2026-02-16", 1],
+            ["2026-02-20", 3],
+            ["2026-03-01", 6],
+            ["2026-03-05", 9],
+            ["2026-03-10", 8],
+            ["2026-03-12", 12],
+            ["2026-03-14", 6],
+            ["2026-03-16", 0]
+          ]
+        }
+      }
+    },
+    "10_get_alerts_by_type": {
+      "method": "GET",
+      "endpoint": "/api/alerts/by-type",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "Accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "data": [
+            ["SQL_INJECTION", 8],
+            ["XSS", 12],
+            ["DDoS", 15],
+            ["BRUTE_FORCE", 7]
+          ]
+        }
+      }
+    },
+    "11_filter_alerts_by_type": {
+      "method": "GET",
+      "endpoint": "/api/alerts?page=0&size=10&alertType=SQL_INJECTION",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "Accept": "application/json"
+      },
+      "response": {
+        "status": 200,
+        "body": {
+          "content": [
+            {
+              "id": 1,
+              "packetId": 5,
+              "alertType": "SQL_INJECTION",
+              "severity": "CRITICAL",
+              "message": "Alert created for packet: 5",
+              "status": "OPEN",
+              "createdAt": "2026-03-16T10:31:23.489+07:00",
+              "resolvedAt": null,
+              "resolvedBy": null,
+              "updatedAt": "2026-03-16T10:31:23.489+07:00"
+            }
+          ],
+          "totalElements": 8,
+          "totalPages": 1,
+          "currentPage": 0,
+          "pageSize": 10
+        }
+      }
+    },
+    "12_error_invalid_status": {
+      "method": "PATCH",
+      "endpoint": "/api/alerts/1/status",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "Content-Type": "application/json"
+      },
+      "requestBody": {
+        "status": "INVALID_STATUS",
+        "notes": "Some notes"
+      },
+      "response": {
+        "status": 400,
+        "body": {
+          "timestamp": "2026-03-16T10:40:00.000+07:00",
+          "status": 400,
+          "error": "Bad Request",
+          "message": "Validation failed",
+          "path": "/api/alerts/1/status"
+        }
+      }
+    },
+    "13_error_alert_not_found": {
+      "method": "GET",
+      "endpoint": "/api/alerts/999",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "Accept": "application/json"
+      },
+      "response": {
+        "status": 404,
+        "body": {
+          "timestamp": "2026-03-16T10:40:00.000+07:00",
+          "status": 404,
+          "error": "Not Found",
+          "message": "Alert not found with id: 999",
+          "path": "/api/alerts/999"
+        }
+      }
+    },
+    "14_error_unauthorized": {
+      "method": "GET",
+      "endpoint": "/api/alerts",
+      "headers": {
+        "Accept": "application/json"
+      },
+      "response": {
+        "status": 401,
+        "body": {
+          "timestamp": "2026-03-16T10:40:00.000+07:00",
+          "status": 401,
+          "error": "Unauthorized",
+          "message": "Unauthorized - Missing or invalid JWT token",
+          "path": "/api/alerts"
+        }
+      }
+    },
+    "15_error_forbidden_delete": {
+      "method": "DELETE",
+      "endpoint": "/api/alerts/1",
+      "headers": {
+        "Authorization": "Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...",
+        "Accept": "application/json"
+      },
+      "notes": "User has role USER, not ADMIN",
+      "response": {
+        "status": 403,
+        "body": {
+          "timestamp": "2026-03-16T10:40:00.000+07:00",
+          "status": 403,
+          "error": "Forbidden",
+          "message": "Access Denied",
+          "path": "/api/alerts/1"
+        }
+      }
+    }
+  }
+}
+

@@ -16,6 +16,8 @@ public interface PacketRepository extends JpaRepository<Packet, Long> {
 
     long countByLabel(String label);
 
+    long countByCapturedAtBetween(LocalDateTime from, LocalDateTime to);
+
     long countByLabelAndCapturedAtBetween(
         String label, LocalDateTime from, LocalDateTime to);
 }
