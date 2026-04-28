@@ -22,6 +22,8 @@ import java.util.Map;
 @RequestMapping("/api/alerts")
 @RequiredArgsConstructor
 @Slf4j
+@CrossOrigin(origins = "http://localhost:3000")
+
 public class AlertController {
 
     private final AlertService alertService;

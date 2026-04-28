@@ -1,9 +1,6 @@
 package com.hunglevi.backend.controller;
 
-import com.hunglevi.backend.dto.AccessTokenResponse;
-import com.hunglevi.backend.dto.LoginRequest;
-import com.hunglevi.backend.dto.LoginResult;
-import com.hunglevi.backend.dto.RegisterRequest;
+import com.hunglevi.backend.dto.*;
 import com.hunglevi.backend.exception.InvalidTokenException;
 import com.hunglevi.backend.service.AuthService;
 import jakarta.servlet.http.Cookie;
@@ -12,7 +9,6 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.Map;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
@@ -22,16 +18,12 @@ import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestHeader;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
+@CrossOrigin(origins = "http://localhost:3000")
 public class AuthController {
     private static final String REFRESH_COOKIE_NAME = "refresh_token";
 
@@ -69,21 +61,18 @@ public class AuthController {
             @AuthenticationPrincipal UserDetails userDetails,
             HttpServletResponse response
     ) {
+        if (userDetails == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
         authService.logout(userDetails.getUsername());
         clearRefreshTokenCookie(response);
         return ResponseEntity.noContent().build();
     }
 
     @GetMapping("/me")
-    public ResponseEntity<Map<String, String>> me(@AuthenticationPrincipal UserDetails userDetails) {
-        String role = userDetails.getAuthorities().stream()
-                .findFirst()
-                .map(authority -> authority.getAuthority().replaceFirst("^ROLE_", ""))
-                .orElse("");
-        return ResponseEntity.ok(Map.of(
-                "username", userDetails.getUsername(),
-                "role", role
-        ));
+    public ResponseEntity<UserResponse> me() {
+        UserResponse user = authService.getCurrentUser();
+        return ResponseEntity.ok(user);
     }
 
     @PostMapping("/register")

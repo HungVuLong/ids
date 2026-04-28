@@ -8,6 +8,7 @@ import com.hunglevi.backend.dto.UserResponse;
 import com.hunglevi.backend.entity.RefreshToken;
 import com.hunglevi.backend.entity.User;
 import com.hunglevi.backend.exception.DuplicateResourceException;
+import com.hunglevi.backend.exception.UnauthorizedException;
 import com.hunglevi.backend.exception.ResourceNotFoundException;
 import com.hunglevi.backend.repository.UserRepository;
 import com.hunglevi.backend.security.JwtUtil;
@@ -95,7 +96,21 @@ public class AuthService {
 
     public UserResponse getCurrentUser() {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        String username = authentication.getName();
+
+        if (authentication == null || !authentication.isAuthenticated()) {
+            throw new UnauthorizedException("Authentication required");
+        }
+
+        Object principal = authentication.getPrincipal();
+        String username;
+        if (principal instanceof UserDetails userDetails) {
+            username = userDetails.getUsername();
+        } else if (principal instanceof String principalName && !"anonymousUser".equals(principalName)) {
+            username = principalName;
+        } else {
+            throw new UnauthorizedException("Authentication required");
+        }
+
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
