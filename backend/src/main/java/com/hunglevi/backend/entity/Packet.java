@@ -2,7 +2,6 @@ package com.hunglevi.backend.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -19,32 +18,42 @@ public class Packet {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(nullable = false, length = 45)
-    private String sourceIp;
+    @Column(name = "source_ip", length = 45)
+    private String srcIp;
 
-    @Column(nullable = false, length = 45)
-    private String destIp;
+    @Column(name = "dest_ip", length = 45)
+    private String dstIp;
+
+    @Column(name = "src_port")
+    private Integer srcPort;
+
+    @Column(name = "dst_port")
+    private Integer dstPort;
 
     @Column(nullable = false, length = 10)
     private String protocol;
 
     @Column(nullable = false)
-    private Integer size;
+    private Double duration;
+
+    @Column(nullable = false)
+    private Integer land;
+
+    @Column(name = "wrong_fragment", nullable = false)
+    private Integer wrongFragment;
+
+    @Column(nullable = false)
+    private Integer urgent;
 
     @Column(nullable = false, length = 100)
     private String label;
 
-    @Column(nullable = false, length = 50)
+    @Column(length = 50)
     private String attackType;
 
     @Column(nullable = false)
     private Double confidence;
 
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false)
     private LocalDateTime capturedAt;
-
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
-    private LocalDateTime timestamp;
 }

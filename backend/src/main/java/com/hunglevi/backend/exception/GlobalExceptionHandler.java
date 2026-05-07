@@ -71,6 +71,20 @@ public class GlobalExceptionHandler {
         );
     }
 
+    @ExceptionHandler(UnauthorizedException.class)
+    public ResponseEntity<ErrorResponse> handleUnauthorized(
+            UnauthorizedException ex, HttpServletRequest req) {
+        return ResponseEntity.status(401).body(
+            ErrorResponse.builder()
+                .status(401)
+                .error("Unauthorized")
+                .message(ex.getMessage())
+                .path(req.getRequestURI())
+                .timestamp(LocalDateTime.now())
+                .build()
+        );
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<ErrorResponse> handleGeneral(
             Exception ex, HttpServletRequest req) {

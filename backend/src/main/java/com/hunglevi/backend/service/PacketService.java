@@ -6,12 +6,7 @@ import org.springframework.data.domain.Page;
 
 public interface PacketService {
 
-    PacketResponse createPacket(PacketRequest req);
+    PacketResponse analyzePacket(PacketRequest request, String submittedBy);
 
     Page<PacketResponse> getPackets(int page, int size, String label);
-
-    PacketResponse getPacketById(Long id);
-
-    void deletePacket(Long id);
 }
-

@@ -1,8 +1,6 @@
 package com.hunglevi.backend.dto.request;
 
-import jakarta.validation.constraints.Min;
 import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -14,26 +12,26 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 public class PacketRequest {
 
-    @NotBlank(message = "sourceIp is required")
-    private String sourceIp;
+    private String srcIp;
 
-    @NotBlank(message = "destIp is required")
-    private String destIp;
+    private String dstIp;
+
+    private Integer srcPort;
+
+    private Integer dstPort;
 
     @NotBlank(message = "protocol is required")
     private String protocol;
 
-    @NotNull(message = "size is required")
-    @Min(value = 1, message = "size must be greater than 0")
-    private Integer size;
+    @Builder.Default
+    private Double duration = 0.0;
 
-    @NotBlank(message = "label is required")
-    private String label;
+    @Builder.Default
+    private Integer land = 0;
 
-    @NotBlank(message = "attackType is required")
-    private String attackType;
+    @Builder.Default
+    private Integer wrongFragment = 0;
 
-    @NotNull(message = "confidence is required")
-    private Double confidence;
+    @Builder.Default
+    private Integer urgent = 0;
 }
-

@@ -2,9 +2,10 @@ package com.hunglevi.backend.service;
 
 import com.hunglevi.backend.dto.AlertResponse;
 import com.hunglevi.backend.dto.AlertStatusUpdateRequest;
+import com.hunglevi.backend.dto.ml.MLResponse;
 import com.hunglevi.backend.entity.Alert;
+import com.hunglevi.backend.entity.Packet;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -17,19 +18,24 @@ public interface AlertService {
     AlertResponse createAlert(Long packetId, String alertType, double confidence);
 
     /**
-     * Get paginated list of alerts
+     * Create a new alert for a packet and return the entity for notification.
      */
-    Page<AlertResponse> getAlerts(int page, int size, String status, String alertType);
+    Alert createAlert(Packet packet, MLResponse mlResponse);
 
     /**
-     * Get a specific alert by ID
+     * Get paginated list of alerts
      */
-    AlertResponse getAlertById(Long id);
+    Page<AlertResponse> getAlerts(int page, int size, String status, String attackType);
 
     /**
      * Update alert status (resolve or ignore)
      */
     AlertResponse updateAlertStatus(Long id, AlertStatusUpdateRequest request, String username);
+
+    /**
+     * Update alert status with resolved by username
+     */
+    AlertResponse updateStatus(Long id, String status, String resolvedBy);
 
     /**
      * Delete an alert
@@ -56,6 +62,11 @@ public interface AlertService {
      */
     AlertStatsDto getAlertStats();
 
+    /**
+     * Get a specific alert by ID
+     */
+    AlertResponse getAlertById(Long id);
+
     @lombok.Data
     @lombok.Builder
     class AlertStatsDto {
@@ -66,4 +77,3 @@ public interface AlertService {
         private List<Object[]> alertsByType;
     }
 }
-

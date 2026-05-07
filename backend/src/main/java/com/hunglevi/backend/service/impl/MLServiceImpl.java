@@ -5,8 +5,6 @@ import com.hunglevi.backend.dto.ml.MLResponse;
 import com.hunglevi.backend.entity.Packet;
 import com.hunglevi.backend.service.MLService;
 import java.time.Duration;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,54 +17,56 @@ import reactor.core.publisher.Mono;
 @Slf4j
 public class MLServiceImpl implements MLService {
 
-    private static final MLResponse FALLBACK_RESPONSE = MLResponse.builder()
-        .label("unknown")
-        .attackType("UNKNOWN")
-        .confidence(0.0)
-        .predictionTimeMs(0L)
-        .build();
-
     private final WebClient mlWebClient;
 
     @Override
-    public Mono<MLResponse> predict(Packet packet) {
-        Map<String, Object> features = buildFeatures(packet);
+    public MLResponse classify(Packet packet) {
+        try {
+            MLRequest request = MLRequest.fromPacket(packet);
+            MLResponse response = mlWebClient.post()
+                .uri("/predict")
+                .bodyValue(request)
+                .retrieve()
+                .bodyToMono(MLResponse.class)
+                .timeout(Duration.ofSeconds(5))
+                .onErrorResume(ex -> Mono.just(buildFallback()))
+                .block();
 
-        return mlWebClient.post()
-            .uri("/predict")
-            .bodyValue(new MLRequest(features))
-            .retrieve()
-            .bodyToMono(MLResponse.class)
-            // ML dependency must never crash alerting; use safe fallback values.
-            .onErrorReturn(FALLBACK_RESPONSE)
-            .doOnNext(response -> log.info("ML predict: {}", response.getLabel()));
+            if (response == null) {
+                return buildFallback();
+            }
+
+            log.info("ML classify: label={} type={} confidence={}",
+                response.getLabel(), response.getAttackType(), response.getConfidence());
+            return response;
+        } catch (Exception e) {
+            log.error("ML Service error: {}", e.getMessage());
+            return buildFallback();
+        }
     }
 
     @Override
     public boolean isHealthy() {
-        return Boolean.TRUE.equals(
-            mlWebClient.get()
+        try {
+            HealthResponse response = mlWebClient.get()
                 .uri("/health")
                 .retrieve()
                 .bodyToMono(HealthResponse.class)
-                .map(response -> "ok".equalsIgnoreCase(response.getStatus()))
-                .onErrorReturn(false)
-                .block(Duration.ofSeconds(3))
-        );
+                .block(Duration.ofSeconds(3));
+            return response != null && "ok".equalsIgnoreCase(response.getStatus());
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    private Map<String, Object> buildFeatures(Packet packet) {
-        Map<String, Object> features = new LinkedHashMap<>();
-        features.put("sourceIp", packet.getSourceIp());
-        features.put("destIp", packet.getDestIp());
-        features.put("protocol", packet.getProtocol());
-        features.put("size", packet.getSize());
-
-        if (packet.getCapturedAt() != null) {
-            features.put("capturedAt", packet.getCapturedAt().toString());
-        }
-
-        return features;
+    private MLResponse buildFallback() {
+        log.warn("ML Service unavailable — defaulting to normal classification");
+        return MLResponse.builder()
+            .label("normal")
+            .attackType("normal")
+            .confidence(0.0)
+            .predictionTimeMs(0L)
+            .build();
     }
 
     @Data
@@ -74,4 +74,3 @@ public class MLServiceImpl implements MLService {
         private String status;
     }
 }
-
