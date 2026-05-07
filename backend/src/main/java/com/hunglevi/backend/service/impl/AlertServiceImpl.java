@@ -2,6 +2,7 @@ package com.hunglevi.backend.service.impl;
 
 import com.hunglevi.backend.dto.AlertResponse;
 import com.hunglevi.backend.dto.AlertStatusUpdateRequest;
+import com.hunglevi.backend.dto.ml.MLResponse;
 import com.hunglevi.backend.entity.Alert;
 import com.hunglevi.backend.entity.Packet;
 import com.hunglevi.backend.entity.User;
@@ -9,7 +10,6 @@ import com.hunglevi.backend.repository.AlertRepository;
 import com.hunglevi.backend.repository.PacketRepository;
 import com.hunglevi.backend.repository.UserRepository;
 import com.hunglevi.backend.service.AlertService;
-import com.hunglevi.backend.service.WebSocketService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -30,7 +30,6 @@ public class AlertServiceImpl implements AlertService {
     private final AlertRepository alertRepository;
     private final PacketRepository packetRepository;
     private final UserRepository userRepository;
-    private final WebSocketService webSocketService;
 
     @Override
     @Transactional
@@ -40,24 +39,26 @@ public class AlertServiceImpl implements AlertService {
         Packet packet = packetRepository.findById(packetId)
                 .orElseThrow(() -> new EntityNotFoundException("Packet not found with id: " + packetId));
 
-        // Determine severity based on confidence
+        String normalizedType = normalizeAlertType(alertType);
         String severity = determineSeverity(confidence);
+        String message = buildAlertMessage(packet, normalizedType, severity, confidence);
+        Alert alert = createAndSaveAlert(packet, normalizedType, severity, message);
+        log.info("Alert created with id: {}", alert.getId());
 
-        Alert alert = Alert.builder()
-                .packet(packet)
-                .alertType(alertType)
-                .severity(severity)
-                .status("OPEN")
-                .message("Alert created for packet: " + packet.getId())
-                .timestamp(LocalDateTime.now())
-                .updatedAt(LocalDateTime.now())
-                .build();
+        return mapToResponse(alert);
+    }
 
-        Alert savedAlert = alertRepository.save(alert);
-        webSocketService.pushAlert(savedAlert);
-        log.info("Alert created with id: {}", savedAlert.getId());
-
-        return mapToResponse(savedAlert);
+    @Override
+    @Transactional
+    public Alert createAlert(Packet packet, MLResponse mlResponse) {
+        String alertType = mlResponse != null ? mlResponse.getAttackType() : null;
+        double confidence = mlResponse != null && mlResponse.getConfidence() != null ? mlResponse.getConfidence() : 0.0;
+        String normalizedType = normalizeAlertType(alertType);
+        String severity = determineSeverity(confidence);
+        String message = buildAlertMessage(packet, normalizedType, severity, confidence);
+        Alert alert = createAndSaveAlert(packet, normalizedType, severity, message);
+        log.info("Alert created with id: {}", alert.getId());
+        return alert;
     }
 
     @Override
@@ -116,6 +117,30 @@ public class AlertServiceImpl implements AlertService {
 
     @Override
     @Transactional
+    public AlertResponse updateStatus(Long id, String status, String resolvedBy) {
+        log.info("Updating alert {} status to {} by user {}", id, status, resolvedBy);
+
+        Alert alert = alertRepository.findById(id)
+                .orElseThrow(() -> new EntityNotFoundException("Alert not found with id: " + id));
+
+        if (resolvedBy != null && !resolvedBy.isBlank()) {
+            User user = userRepository.findByUsername(resolvedBy)
+                    .orElseThrow(() -> new EntityNotFoundException("User not found with username: " + resolvedBy));
+            alert.setResolvedBy(user);
+            alert.setResolvedAt(LocalDateTime.now());
+        }
+
+        alert.setStatus(status);
+        alert.setUpdatedAt(LocalDateTime.now());
+
+        Alert updatedAlert = alertRepository.save(alert);
+        log.info("Alert {} updated successfully", id);
+
+        return mapToResponse(updatedAlert);
+    }
+
+    @Override
+    @Transactional
     public void deleteAlert(Long id) {
         log.info("Deleting alert with id {}", id);
 
@@ -159,6 +184,32 @@ public class AlertServiceImpl implements AlertService {
                 .totalCount(totalCount)
                 .alertsByType(alertsByType)
                 .build();
+    }
+
+    private Alert createAndSaveAlert(Packet packet, String alertType, String severity, String message) {
+        Alert alert = Alert.builder()
+                .packet(packet)
+                .alertType(alertType)
+                .severity(severity)
+                .status("OPEN")
+                .message(message)
+                .timestamp(LocalDateTime.now())
+                .updatedAt(LocalDateTime.now())
+                .build();
+
+        return alertRepository.save(alert);
+    }
+
+    private String buildAlertMessage(Packet packet, String attackType, String severity, double confidence) {
+        String srcIp = packet != null && packet.getSrcIp() != null ? packet.getSrcIp() : "unknown";
+        String dstIp = packet != null && packet.getDstIp() != null ? packet.getDstIp() : "unknown";
+        String attack = normalizeAlertType(attackType);
+        return String.format("[%s] %s attack detected from %s -> %s (confidence: %.0f%%)",
+                severity, attack, srcIp, dstIp, confidence * 100);
+    }
+
+    private String normalizeAlertType(String alertType) {
+        return alertType != null && !alertType.isBlank() ? alertType : "unknown";
     }
 
     private String determineSeverity(double confidence) {

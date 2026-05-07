@@ -22,15 +22,19 @@ CREATE TABLE users (
 
 CREATE TABLE packets (
                         id         BIGSERIAL PRIMARY KEY,
-                        source_ip  VARCHAR(45) NOT NULL,
-                        dest_ip    VARCHAR(45) NOT NULL,
+                        source_ip  VARCHAR(45),
+                        dest_ip    VARCHAR(45),
+                        src_port   INTEGER,
+                        dst_port   INTEGER,
                         protocol   VARCHAR(10) NOT NULL,
-                        size       INTEGER      NOT NULL,
+                        duration   DOUBLE PRECISION NOT NULL DEFAULT 0,
+                        land       INTEGER NOT NULL DEFAULT 0,
+                        wrong_fragment INTEGER NOT NULL DEFAULT 0,
+                        urgent     INTEGER NOT NULL DEFAULT 0,
                         label      VARCHAR(100) NOT NULL,
-                        attack_type VARCHAR(50) NOT NULL,
+                        attack_type VARCHAR(50),
                         confidence DOUBLE PRECISION NOT NULL,
-                        captured_at TIMESTAMP NOT NULL DEFAULT NOW(),
-                        timestamp  TIMESTAMP    NOT NULL DEFAULT NOW()
+                        captured_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
 
 CREATE TABLE alerts (
@@ -56,4 +60,3 @@ CREATE TABLE reports (
                         created_at TIMESTAMP    NOT NULL DEFAULT NOW(),
                         FOREIGN KEY (generated_by) REFERENCES users(id) ON DELETE CASCADE
 );
-

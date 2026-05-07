@@ -14,5 +14,12 @@ public class MLResponse {
     private String attackType;
     private Double confidence;
     private Long predictionTimeMs;
-}
 
+    public boolean isAttack() {
+        return "attack".equals(label);
+    }
+
+    public boolean isHighConfidence() {
+        return confidence != null && confidence >= 0.7;
+    }
+}

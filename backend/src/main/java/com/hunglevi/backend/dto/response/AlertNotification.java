@@ -9,16 +9,15 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class PacketResponse {
-
-    private Long id;
+public class AlertNotification {
+    private Long alertId;
+    private String attackType;
+    private String severity;
+    private String message;
     private String srcIp;
     private String dstIp;
-    private String protocol;
-    private String label;
-    private String attackType;
     private Double confidence;
-    private Boolean isThreat;
-    private String capturedAt;
-    private String message;
+    private String detectedAt;
+    private String status;
 }
+
