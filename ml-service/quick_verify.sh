@@ -14,25 +14,17 @@ curl http://localhost:5000/health
 # End-to-end test
 $env:TEST_JWT_TOKEN = "VGhpcyBpcyBhIHZlcnkgc2VjdXJlIHNlY3JldCBrZXkgZm9yIEpXVA"; $env:SPRING_URL = "http://backend:1010/api/packets"
 python simulate_attack.py --dos 3 --normal 5 --delay 0.5
-python simulate_attack.py --token "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJodW5nbGV2aTEiLCJpYXQiOjE3NzY2NDkyMzQsImV4cCI6MTc3NjczNTYzNH0.I0m78M9fzSFBHa46lVWDTCqnYZWW65EcV5RdlbGl9nX8IZLptAtVsx7Qj0wY3Y6dFJzQsITsj4GJmlM08RiIRw" --normal 10 --dos 5 --probe 3 --delay 0.5
 
-|---- Manual cURL test
-$token = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJodW5nbGV2aTEiLCJpYXQiOjE3NzY2NDkyMzQsImV4cCI6MTc3NjczNTYzNH0.I0m78M9fzSFBHa46lVWDTCqnYZWW65EcV5RdlbGl9nX8IZLptAtVsx7Qj0wY3Y6dFJzQsITsj4GJmlM08RiIRw"
-$url = "http://localhost:1010/api/packets"
-$headers = @{ Authorization = "Bearer $token"; "Content-Type" = "application/json" }
+python simulate_attack.py --token "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJodW5nbGV2aTEiLCJpYXQiOjE3NzgxMzcwODgsImV4cCI6MTc3ODIyMzQ4OH0.bHMafhBuhsHbaHaPPCpOn_arn_dy9xDpwdkU8JSgXu1nXyx2m0qOEEP4LtZim0JstyYonkL2mJsxt61I9satQQ" --normal 10 --dos 5 --probe 3 --delay 0.5
+python simulate_attack.py --mode spring --token "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJodW5nbGV2aTEiLCJpYXQiOjE3NzgxMzcwODgsImV4cCI6MTc3ODIyMzQ4OH0.bHMafhBuhsHbaHaPPCpOn_arn_dy9xDpwdkU8JSgXu1nXyx2m0qOEEP4LtZim0JstyYonkL2mJsxt61I9satQQ" --normal 10 --dos 5 --probe 3 --delay 0.5
+# ML single-predict mode (POST /predict)
+python simulate_attack.py --mode ml --normal 2 --dos 1 --probe 1
 
-1..20 | ForEach-Object {
-  $body = @{
-    sourceIp   = "192.168.1.$(Get-Random -Minimum 2 -Maximum 254)"
-    destIp     = "10.0.0.$(Get-Random -Minimum 2 -Maximum 254)"
-    protocol   = @("TCP","ICMP") | Get-Random
-    size       = Get-Random -Minimum 40 -Maximum 200
-    label      = "attack"
-    attackType = @("DoS","Probe") | Get-Random
-    confidence = [Math]::Round((Get-Random -Minimum 75 -Maximum 99) / 100, 2)
-  } | ConvertTo-Json
+python simulate_attack.py --mode ml --use-backend-packets --normal 10 --dos 5 --probe 3 --delay 0.5
+# ML batch mode (POST /predict/batch)
+python simulate_attack.py --mode ml --batch --normal 2 --dos 1 --probe 1
 
-  Invoke-RestMethod -Uri $url -Method Post -Headers $headers -Body $body
-  Start-Sleep -Milliseconds 300
-}
+# Spring backend mode (POST /api/packets)
+python simulate_attack.py --mode spring --token "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJodW5nbGV2aTEiLCJpYXQiOjE3NzgxMzcwODgsImV4cCI6MTc3ODIyMzQ4OH0.bHMafhBuhsHbaHaPPCpOn_arn_dy9xDpwdkU8JSgXu1nXyx2m0qOEEP4LtZim0JstyYonkL2mJsxt61I9satQQ" --normal 2 --dos 1 --probe 1
 
+python simulate_attack.py --mode ml --batch --use-backend-packets --normal 10 --dos 5 --probe 3 --delay 0.5
