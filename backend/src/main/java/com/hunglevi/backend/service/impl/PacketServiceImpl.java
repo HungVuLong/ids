@@ -41,19 +41,21 @@ public class PacketServiceImpl implements PacketService {
                 .srcPort(request.getSrcPort())
                 .dstPort(request.getDstPort())
                 .protocol(request.getProtocol())
+                .attackType(request.getAttackType())
                 .duration(defaultDouble(request.getDuration()))
                 .land(defaultInt(request.getLand()))
+                .size(request.getSize())
                 .wrongFragment(defaultInt(request.getWrongFragment()))
                 .urgent(defaultInt(request.getUrgent()))
                 .label("pending")
-                .attackType(null)
-                .confidence(0.0)
+                .confidence(request.getConfidence() != null ? request.getConfidence() : 0.0)
                 .capturedAt(LocalDateTime.now())
                 .build();
 
         packet = packetRepository.save(packet);
-
+        System.out.println("Packet saved: " + packet);
         MLResponse mlResult = mlService.classify(packet);
+        System.out.println("ML Result: " + mlResult);
         if (mlResult == null) {
             mlResult = MLResponse.builder()
                     .label("unknown")
@@ -63,7 +65,7 @@ public class PacketServiceImpl implements PacketService {
         }
 
         packet.setLabel(mlResult.getLabel());
-        packet.setAttackType(mlResult.getAttackType());
+        packet.setAttackType(request.getAttackType());
         packet.setConfidence(mlResult.getConfidence());
         packetRepository.save(packet);
 
@@ -104,6 +106,7 @@ public class PacketServiceImpl implements PacketService {
                 .dstIp(packet.getDstIp())
                 .protocol(packet.getProtocol())
                 .label(packet.getLabel())
+                .size(packet.getSize())
                 .attackType(packet.getAttackType())
                 .confidence(packet.getConfidence())
                 .isThreat(isThreat)

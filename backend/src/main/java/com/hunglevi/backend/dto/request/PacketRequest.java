@@ -20,6 +20,14 @@ public class PacketRequest {
 
     private Integer dstPort;
 
+    private Double confidence;
+
+    private String label;
+
+    private String attackType;
+
+    private int size;
+
     @NotBlank(message = "protocol is required")
     private String protocol;
 

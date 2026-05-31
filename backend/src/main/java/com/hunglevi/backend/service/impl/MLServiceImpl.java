@@ -65,7 +65,6 @@ public class MLServiceImpl implements MLService {
             .label("normal")
             .attackType("normal")
             .confidence(0.0)
-            .predictionTimeMs(0L)
             .build();
     }
 

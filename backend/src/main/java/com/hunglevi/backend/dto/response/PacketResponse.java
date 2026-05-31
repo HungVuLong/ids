@@ -16,6 +16,7 @@ public class PacketResponse {
     private String dstIp;
     private String protocol;
     private String label;
+    private int size;
     private String attackType;
     private Double confidence;
     private Boolean isThreat;

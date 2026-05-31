@@ -13,7 +13,6 @@ public class MLResponse {
     private String label;
     private String attackType;
     private Double confidence;
-    private Long predictionTimeMs;
 
     public boolean isAttack() {
         return "attack".equals(label);

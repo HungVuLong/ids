@@ -54,6 +54,9 @@ public class Packet {
     @Column(nullable = false)
     private Double confidence;
 
+    @Column
+    private int size;
+
     @Column(nullable = false)
     private LocalDateTime capturedAt;
 }
