@@ -12,11 +12,9 @@ curl http://localhost:5000/health
 # expect: {"status":"ok","model_loaded":true,...}
 
 # End-to-end test
-$env:TEST_JWT_TOKEN = "VGhpcyBpcyBhIHZlcnkgc2VjdXJlIHNlY3JldCBrZXkgZm9yIEpXVA"; $env:SPRING_URL = "http://backend:1010/api/packets"
-python simulate_attack.py --dos 3 --normal 5 --delay 0.5
+$env:TEST_JWT_TOKEN = "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJodW5nbGV2aTEiLCJpYXQiOjE3ODAxOTU5NjAsImV4cCI6MTc4MDI4MjM2MH0.o3IAXGqIzoChew5NPwTQ4hHvQC1mNeL02nxAxwxRo7fKZt3WnmugoIRiHgmHAQPGqHfUuKh-_AH26WJbrKUjmw"; $env:SPRING_URL = "http://backend:1010/api/packets"
+python simulate_attack.py --mode ml --dos 3 --normal 5 --delay 0.5
 
-python simulate_attack.py --token "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJodW5nbGV2aTEiLCJpYXQiOjE3NzgxMzcwODgsImV4cCI6MTc3ODIyMzQ4OH0.bHMafhBuhsHbaHaPPCpOn_arn_dy9xDpwdkU8JSgXu1nXyx2m0qOEEP4LtZim0JstyYonkL2mJsxt61I9satQQ" --normal 10 --dos 5 --probe 3 --delay 0.5
-python simulate_attack.py --mode spring --token "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJodW5nbGV2aTEiLCJpYXQiOjE3NzgxMzcwODgsImV4cCI6MTc3ODIyMzQ4OH0.bHMafhBuhsHbaHaPPCpOn_arn_dy9xDpwdkU8JSgXu1nXyx2m0qOEEP4LtZim0JstyYonkL2mJsxt61I9satQQ" --normal 10 --dos 5 --probe 3 --delay 0.5
 # ML single-predict mode (POST /predict)
 python simulate_attack.py --mode ml --normal 2 --dos 1 --probe 1
 
@@ -25,6 +23,6 @@ python simulate_attack.py --mode ml --use-backend-packets --normal 10 --dos 5 --
 python simulate_attack.py --mode ml --batch --normal 2 --dos 1 --probe 1
 
 # Spring backend mode (POST /api/packets)
-python simulate_attack.py --mode spring --token "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJodW5nbGV2aTEiLCJpYXQiOjE3NzgxMzcwODgsImV4cCI6MTc3ODIyMzQ4OH0.bHMafhBuhsHbaHaPPCpOn_arn_dy9xDpwdkU8JSgXu1nXyx2m0qOEEP4LtZim0JstyYonkL2mJsxt61I9satQQ" --normal 2 --dos 1 --probe 1
+python simulate_attack.py --mode spring --token "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJodW5nbGV2aTEiLCJpYXQiOjE3ODAxOTU5NjAsImV4cCI6MTc4MDI4MjM2MH0.o3IAXGqIzoChew5NPwTQ4hHvQC1mNeL02nxAxwxRo7fKZt3WnmugoIRiHgmHAQPGqHfUuKh-_AH26WJbrKUjmw" --normal 2 --dos 1 --probe 1
 
 python simulate_attack.py --mode ml --batch --use-backend-packets --normal 10 --dos 5 --probe 3 --delay 0.5
